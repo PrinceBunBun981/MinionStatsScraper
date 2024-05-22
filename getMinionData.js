@@ -2,16 +2,16 @@ const axios = require('axios');
 const cheerio = require('cheerio');
 
 const args = process.argv.slice(2);
-if (args.length == 1) args[0] += "_Minion";
-if (args.length > 2 || args.length == 0) return console.error("Invalid Minion name");
+if (args.length === 0 || args.length > 3) return console.error("Invalid Minion name");
 
-// Accept all forms of the minion name (e.g. blaze, blaze minion, Blaze Minion, blaze_Minion, Blaze_Minion, etc.)
-const minionName = args.map(arg =>
-    arg.split(/[^a-zA-Z]+/)
-        .map((word, i) => i === 0 ? word.charAt(0).toUpperCase() + word.slice(1) : word)
-        .join('_')
-    )
-    .join(args.length === 2 ? '_' : '');
+// Accept all forms of the minion name (e.g., blaze, blaze minion, Blaze Minion, blaze_Minion, Blaze_Minion, etc.)
+var minionName = args
+    .map(arg => arg.split(/[^a-zA-Z]+/)
+        .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+        .join('_'))
+    .join('_');
+
+if (!minionName.toLowerCase().includes('minion')) minionName += "_Minion";
 
 async function extractNumbers(url) {
     try {
@@ -45,9 +45,10 @@ async function extractNumbers(url) {
 
         console.log(results);
     } catch (error) {
-        if (error.response.status == 404) return console.error("Couldn't find that minion, did you type it in right?");
+        if (error.response && error.response.status === 404) return console.error("Couldn't find that minion, did you type it in right?");
         console.error('Error fetching the webpage:', error);
     }
 }
 
-extractNumbers(`https://wiki.hypixel.net/${minionName}`);
+const url = `https://wiki.hypixel.net/${minionName}`;
+extractNumbers(url);
